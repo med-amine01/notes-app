@@ -5,7 +5,7 @@ import com.app.notes.dto.NoteResponse;
 import com.app.notes.model.Note;
 
 public interface NoteMapper {
-  Note toEntity(NoteRequest noteRequest);
+    Note toEntity(NoteRequest noteRequest);
 
-  NoteResponse toResponse(Note note);
+    NoteResponse toResponse(Note note);
 }

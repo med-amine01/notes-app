@@ -6,13 +6,13 @@ import java.util.List;
 
 public interface NoteService {
 
-  NoteResponse createNote(NoteRequest noteRequest);
+    NoteResponse createNote(NoteRequest noteRequest);
 
-  NoteResponse getNoteById(Long id);
+    NoteResponse getNoteById(Long id);
 
-  List<NoteResponse> getAllNotes();
+    List<NoteResponse> getAllNotes();
 
-  NoteResponse updateNote(Long id, NoteRequest noteRequest);
+    NoteResponse updateNote(Long id, NoteRequest noteRequest);
 
-  void deleteNote(Long id);
+    void deleteNote(Long id);
 }
