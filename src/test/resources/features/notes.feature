@@ -47,7 +47,7 @@ Feature: Notes API CRUD Operations
     When I send a POST request to "/api/v1/notes" with body:
       """
       {
-        "title": "This is a very long title that exceeds the maximum allowed length of 200 characters and should cause a validation error when trying to create a note in the system. This string is definitely over 200 characters to test the validation limit properly and ensure the API correctly rejects titles that exceed the maximum allowed length of exactly 200 characters.",
+        "title": "This is a very long title that exceeds the maximum allowed length of 200 characters and should cause a validation error when trying to create a note in the system",
         "content": "Valid content"
       }
       """
