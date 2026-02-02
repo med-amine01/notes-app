@@ -6,6 +6,14 @@ pipeline {
 		jdk 'Java21'
 		maven 'Maven3'
 	}
+	environment {
+		APP_NAME = 'notes-app'
+		RELEASE_VERSION = '1.0.0'
+		DOCKER_USERNAME = 'med-amine01'
+		DOCKER_PASSWORD = 'dockerhub-token'
+		IMAGE_NAME = "${DOCKER_USERNAME}/${APP_NAME}"
+		IMAGE_TAG = "${RELEASE_VERSION}-${BUILD_NUMBER}"
+	}
 	stages {
 		stage("Clean workspace") {
 			steps {
@@ -42,6 +50,17 @@ pipeline {
 			steps {
 				script {
 					waitForQualityGate abortPipeline: false, credentialsId: 'jenkins-sonarqube-token'
+				}
+			}
+		}
+		stage("Build & Push Docker image") {
+			steps {
+				script {
+					docker.withRegistry('', DOCKER_PASSWORD) {
+						docker_image = docker.build "${IMAGE_NAME}"
+						docker_image.push("${IMAGE_TAG}")
+						docker_image.push("latest")
+					}
 				}
 			}
 		}
