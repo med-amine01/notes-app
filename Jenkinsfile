@@ -9,7 +9,7 @@ pipeline {
 	environment {
 		APP_NAME = 'notes-app'
 		RELEASE_VERSION = '1.0.0'
-		DOCKER_USERNAME = 'med-amine01'
+		DOCKER_USERNAME = 'medaminechebbi'
 		DOCKER_PASSWORD = 'dockerhub-token'
 		IMAGE_NAME = "${DOCKER_USERNAME}/${APP_NAME}"
 		IMAGE_TAG = "${RELEASE_VERSION}-${BUILD_NUMBER}"
