@@ -14,12 +14,14 @@ pipeline {
 		IMAGE_NAME = "${DOCKER_USERNAME}/${APP_NAME}"
 		IMAGE_TAG = "${RELEASE_VERSION}-${BUILD_NUMBER}"
 	}
+
 	stages {
 		stage("Clean workspace") {
 			steps {
 				cleanWs()
 			}
 		}
+
 		stage("Checkout from SCM") {
 			steps {
 				git branch: 'main',
@@ -27,16 +29,19 @@ pipeline {
 				url: 'https://github.com/med-amine01/notes-app.git'
 			}
 		}
+
 		stage("Build application") {
 			steps {
 				sh "mvn clean package"
 			}
 		}
+
 		stage("Test application") {
 			steps {
 				sh "mvn test"
 			}
 		}
+
 		stage("SonarQube analysis") {
 			steps {
 				script {
@@ -46,6 +51,7 @@ pipeline {
 				}
 			}
 		}
+
 		stage("Quality Gate") {
 			steps {
 				script {
@@ -53,6 +59,7 @@ pipeline {
 				}
 			}
 		}
+
 		stage("Build & Push Docker image") {
 			steps {
 				script {
@@ -64,19 +71,20 @@ pipeline {
 				}
 			}
 		}
-		
-		stage("Trivy Image Scan") {
-            steps {
-                sh """
-                  trivy image \
-                    --severity HIGH,CRITICAL \
-                    --exit-code 1 \
-                    --no-progress \
-                    ${IMAGE_NAME}:${IMAGE_TAG}
-                """
-            }
-        }
 
+		stage("Trivy Image Scan") {
+			steps {
+				sh """
+				docker run --rm \
+				-v /var/run/docker.sock:/var/run/docker.sock \
+				aquasec/trivy:latest image \
+				--severity HIGH,CRITICAL \
+				--exit-code 1 \
+				--no-progress \
+				${IMAGE_NAME}:${IMAGE_TAG}
+				"""
+			}
+		}
 
 		stage("Cleanup Artifacts") {
 			steps {
