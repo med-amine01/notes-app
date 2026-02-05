@@ -72,31 +72,34 @@ pipeline {
 			}
 		}
 
-	stage("Trivy Image Scan") {
-		steps {
-			sh """
-			mkdir -p trivy-cache
+		stage("Trivy Image Scan") {
+			steps {
+				sh """
+				# Create cache folder
+				mkdir -p trivy-cache
 
-			# Initialize Trivy DB if it's the first run
-			if [ ! -f trivy-cache/db/trivy.db ]; then
-				echo "Downloading Trivy vulnerability DB..."
-				docker run --rm -v \$(pwd)/trivy-cache:/root/.cache/trivy aquasec/trivy:latest --download-db-only
-			fi
+				# Download Trivy DB first if missing
+				if [ ! -d trivy-cache/db ] || [ -z "\$(ls -A trivy-cache/db 2>/dev/null)" ]; then
+					echo "Downloading Trivy DB..."
+					docker run --rm \
+						-v \$(pwd)/trivy-cache:/root/.cache/trivy \
+						aquasec/trivy:latest --cache-dir /root/.cache/trivy image --scanners vuln --severity HIGH,CRITICAL --no-progress --exit-code 0 alpine:latest
+				fi
 
-			# Run the vulnerability scan
-			docker run --rm \
-				-v /var/run/docker.sock:/var/run/docker.sock \
-				-v \$(pwd)/trivy-cache:/root/.cache/trivy \
-				aquasec/trivy:latest image \
-				--scanners vuln \
-				--severity HIGH,CRITICAL \
-				--exit-code 1 \
-				--no-progress \
-				--skip-db-update \
-				${IMAGE_NAME}:${IMAGE_TAG}
-			"""
+				# Run the actual scan
+				docker run --rm \
+					-v /var/run/docker.sock:/var/run/docker.sock \
+					-v \$(pwd)/trivy-cache:/root/.cache/trivy \
+					aquasec/trivy:latest image \
+					--scanners vuln \
+					--severity HIGH,CRITICAL \
+					--exit-code 1 \
+					--no-progress \
+					--skip-db-update \
+					${IMAGE_NAME}:${IMAGE_TAG}
+				"""
+			}
 		}
-	}
 
 		stage("Cleanup Artifacts") {
 			steps {
