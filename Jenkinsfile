@@ -72,11 +72,19 @@ pipeline {
 			}
 		}
 
-		stage("Trivy Image Scan") {
-			steps {
-				sh """
-				mkdir -p trivy-cache
-				docker run --rm \
+	stage("Trivy Image Scan") {
+		steps {
+			sh """
+			mkdir -p trivy-cache
+
+			# Initialize Trivy DB if it's the first run
+			if [ ! -f trivy-cache/db/trivy.db ]; then
+				echo "Downloading Trivy vulnerability DB..."
+				docker run --rm -v \$(pwd)/trivy-cache:/root/.cache/trivy aquasec/trivy:latest --download-db-only
+			fi
+
+			# Run the vulnerability scan
+			docker run --rm \
 				-v /var/run/docker.sock:/var/run/docker.sock \
 				-v \$(pwd)/trivy-cache:/root/.cache/trivy \
 				aquasec/trivy:latest image \
@@ -84,11 +92,11 @@ pipeline {
 				--severity HIGH,CRITICAL \
 				--exit-code 1 \
 				--no-progress \
-				--skip-update \
+				--skip-db-update \
 				${IMAGE_NAME}:${IMAGE_TAG}
-				"""
-			}
+			"""
 		}
+	}
 
 		stage("Cleanup Artifacts") {
 			steps {
