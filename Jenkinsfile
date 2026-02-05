@@ -75,28 +75,13 @@ pipeline {
 		stage("Trivy Image Scan") {
 			steps {
 				sh """
-				# Create cache folder
-				mkdir -p trivy-cache
-
-				# Download Trivy DB first if missing
-				if [ ! -d trivy-cache/db ] || [ -z "\$(ls -A trivy-cache/db 2>/dev/null)" ]; then
-					echo "Downloading Trivy DB..."
-					docker run --rm \
-						-v \$(pwd)/trivy-cache:/root/.cache/trivy \
-						aquasec/trivy:latest --cache-dir /root/.cache/trivy image --scanners vuln --severity HIGH,CRITICAL --no-progress --exit-code 0 alpine:latest
-				fi
-
-				# Run the actual scan
-				docker run --rm \
-					-v /var/run/docker.sock:/var/run/docker.sock \
-					-v \$(pwd)/trivy-cache:/root/.cache/trivy \
-					aquasec/trivy:latest image \
-					--scanners vuln \
-					--severity HIGH,CRITICAL \
-					--exit-code 1 \
+				docker run -v /var/run/docker.sock:/var/run/docker.sock \
+					aquasec/trivy:latest image ${IMAGE_NAME}:${IMAGE_TAG} \
 					--no-progress \
-					--skip-db-update \
-					${IMAGE_NAME}:${IMAGE_TAG}
+					--scanners vuln \
+					--exit-code 0 \
+					--severity HIGH,CRITICAL \
+					--format table \
 				"""
 			}
 		}
