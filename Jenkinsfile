@@ -75,13 +75,15 @@ pipeline {
 		stage("Trivy Image Scan") {
 			steps {
 				sh """
-				docker run -v /var/run/docker.sock:/var/run/docker.sock \
-					aquasec/trivy:latest image ${IMAGE_NAME}:${IMAGE_TAG} \
-					--no-progress \
-					--scanners vuln \
-					--exit-code 0 \
-					--severity HIGH,CRITICAL \
-					--format table \
+				docker run \
+				-v /var/run/docker.sock:/var/run/docker.sock \
+				-v /data/trivy-cache:/root/.cache/trivy \
+				aquasec/trivy:latest image ${IMAGE_NAME}:${IMAGE_TAG} \
+				--no-progress \
+				--scanners vuln \
+				--exit-code 0 \
+				--severity HIGH,CRITICAL \
+				--format table
 				"""
 			}
 		}
